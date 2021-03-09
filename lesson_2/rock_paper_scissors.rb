@@ -1,5 +1,5 @@
 class RPSGame
-  attr_accessor :human, :computer
+  attr_accessor :human, :computer, :winner
 
   MAX_WINS = 10
 
@@ -7,33 +7,63 @@ class RPSGame
     @human = Human.new
     @computer = Computer.new
     @moves = { human.name => [], computer.name => [] }
+    @winner = nil
   end
 
+  def play
+    display_welcome_message
+    loop do
+      make_moves!
+      analyze_moves!
+      display_score
+      break if game_over? || !continue?
+      system "clear"
+    end
+    goodbye
+  end
+
+  private
+
   def display_welcome_message
+    system 'clear'
     puts "Welcome to Rock, Paper, Scissors!"
   end
 
   def make_moves!
     human.choose
     computer.choose
-    record_moves
-    display_moves # put this here to decrease methodlength of #play
+    record_moves!
+    display_moves
   end
 
-  def record_moves
+  def analyze_moves!
+    self.winner = determine_winner!
+    update_score!
+    display_winner
+  end
+
+  def record_moves!
     @moves[human.name] << human.move.to_s
     @moves[computer.name] << computer.move.to_s
   end
 
-  def determine_winner
-    if human.move > computer.move
-      puts "#{human.name} won!"
-      human.score += 1
-    elsif human.move < computer.move
-      puts "#{computer.name} won!"
-      computer.score += 1
-    else
+  def update_score!
+    winner.score += 1 if !@winner.nil?
+  end
+
+  def display_winner
+    if @winner.nil?
       puts "It's a tie!"
+    else
+      puts "#{winner.name} won!"
+    end
+  end
+
+  def determine_winner!
+    if human.move > computer.move
+      human
+    elsif computer.move > human.move
+      computer
     end
   end
 
@@ -103,18 +133,6 @@ class RPSGame
     display_past_moves
     display_goodbye_message
   end
-
-  def play
-    display_welcome_message
-    loop do
-      make_moves!
-      determine_winner
-      display_score
-      break if game_over? || !continue?
-      system "clear"
-    end
-    goodbye
-  end
 end
 
 class Player
@@ -151,11 +169,13 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, scissors, lizard, or spock:"
-      choice = gets.chomp
+      puts "Please choose rock, paper, scissors, lizard, or spock"
+      puts "('r', 'p', 'sc', 'l', and 'sp' are also accepted)"
+      choice = gets.chomp.downcase
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice."
     end
+    choice = Move.full_choice(choice) if choice.size <= 2
     self.move = hand_sign(choice)
   end
 end
@@ -181,7 +201,18 @@ class Computer < Player
 end
 
 class Move
-  VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
+  VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock',
+            'r', 'p', 'sc', 'l', 'sp']
+
+  def self.full_choice(abbr)
+    case abbr
+    when 'r' then 'rock'
+    when 'p' then 'paper'
+    when 'sc' then 'scissors'
+    when 'l' then 'lizard'
+    when 'sp' then 'spock'
+    end
+  end
 
   def to_s
     self.class.to_s.downcase
@@ -192,19 +223,11 @@ class Rock < Move
   def >(other_move)
     other_move.is_a?(Scissors) || other_move.is_a?(Lizard)
   end
-
-  def <(other_move)
-    other_move.is_a?(Paper) || other_move.is_a?(Spock)
-  end
 end
 
 class Paper < Move
   def >(other_move)
     other_move.is_a?(Rock) || other_move.is_a?(Spock)
-  end
-
-  def <(other_move)
-    other_move.is_a?(Scissors) || other_move.is_a?(Lizard)
   end
 end
 
@@ -212,29 +235,17 @@ class Scissors < Move
   def >(other_move)
     other_move.is_a?(Paper) || other_move.is_a?(Lizard)
   end
-
-  def <(other_move)
-    other_move.is_a?(Spock) || other_move.is_a?(Rock)
-  end
 end
 
 class Lizard < Move
   def >(other_move)
     other_move.is_a?(Paper) || other_move.is_a?(Spock)
   end
-
-  def <(other_move)
-    other_move.is_a?(Rock) || other_move.is_a?(Scissors)
-  end
 end
 
 class Spock < Move
   def >(other_move)
     other_move.is_a?(Rock) || other_move.is_a?(Scissors)
-  end
-
-  def <(other_move)
-    other_move.is_a?(Paper) || other_move.is_a?(Lizard)
   end
 end
 
