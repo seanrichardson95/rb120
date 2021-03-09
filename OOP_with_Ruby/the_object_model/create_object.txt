@@ -1,0 +1,12 @@
+Q: How do we create an object in Ruby? Give an example of the creation of an object.
+
+My answer:
+We create an object through the process of instantiation. You can either call a class.new method, like `String.new`, or you can initialize a variable to a value of an object, like `var = 6`
+
+LS answer:
+We create an object by defining a class and instantiating it by using the .new method to create an instance, also known as an object.
+
+class MyClass
+end
+
+my_obj = MyClass.new
