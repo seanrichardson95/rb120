@@ -183,7 +183,7 @@ class TTTGame
   def valid_marker?(choice)
     if choice.size != 1
       puts "I'm sorry, your marker must be one character"
-    elsif choice == computer.marker
+    elsif choice.upcase == computer.marker
       puts "I'm sorry, that's the computer's marker"
     elsif choice == " "
       puts "Your marker cannot be a space"
